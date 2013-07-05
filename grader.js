@@ -6,27 +6,28 @@
   
   References:
   
-   + cheerio
-      - https://github.com/MatthewMueller/cheerio
-         - http://encosia.com/cheerio-faster-windows-friendly-alternative-jsdom/
-	    - http://maxogden.com/scraping-with-node.html
-	    
-	     + commander.js
-	        - https://github.com/visionmedia/commander.js
-		   - http://tjholowaychuk.com/post/9103188408/commander-js-nodejs-command-line-interfaces-made-easy
-		   
-		    + JSON
-		       - http://en.wikipedia.org/wiki/JSON
-		          - https://developer.mozilla.org/en-US/docs/JSON
-			     - https://developer.mozilla.org/en-US/docs/JSON#JSON_in_Firefox_2
-			     */
-
+  + cheerio
+  - https://github.com/MatthewMueller/cheerio
+  - http://encosia.com/cheerio-faster-windows-friendly-alternative-jsdom/
+  - http://maxogden.com/scraping-with-node.html
+  
+  + commander.js
+  - https://github.com/visionmedia/commander.js
+  - http://tjholowaychuk.com/post/9103188408/commander-js-nodejs-command-line-interfaces-made-easy
+  
+  + JSON
+  - http://en.wikipedia.org/wiki/JSON
+  - https://developer.mozilla.org/en-US/docs/JSON
+  - https://developer.mozilla.org/en-US/docs/JSON#JSON_in_Firefox_2
+*/
+var sys = require('util');
 var fs = require('fs');
+var rest = require('restler');
 var program = require('commander');
 var cheerio = require('cheerio');
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
-
+var TEMPFILE_DEFAULT = "index.html";
 var assertFileExists = function(infile) {
     var instr = infile.toString();
     if(!fs.existsSync(instr)) {
@@ -65,7 +66,27 @@ if(require.main == module) {
         program
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
+	.option('-u, --url <url>', 'Url ', function(data) {
+	    rest.get(data).on('complete', function(result) {
+		if (result instanceof Error) {
+		    sys.puts('Error: ' + result.message);
+		    this.retry(5000); // try again after 5 sec
+		} else {
+		    // http://stackoverflow.com/questions/2496710/nodejs-write-to-file
+		    TEMPFILE_DEFAULT = "index1.html"
+		    fs.writeFile(TEMPFILE_DEFAULT, "Hey there!", function(err) {
+			if(err) {
+			    console.log(err);
+			} else {
+			    console.log("The file was saved!");
+			}
+		    }); 
+		}
+	    });
+	    console.log(data);
+	}, TEMPFILE_DEFAULT)
         .parse(process.argv);
+    console.log(program.file);
     var checkJson = checkHtmlFile(program.file, program.checks);
     var outJson = JSON.stringify(checkJson, null, 4);
     console.log(outJson);

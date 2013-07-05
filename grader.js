@@ -80,7 +80,8 @@ if(require.main == module) {
 			} else {
 			    console.log("The file was saved!");
 			}
-		    }); 
+		    });
+		    program.file = TEMPFILE_DEFAULT;
 		}
 	    });
 	    console.log(data);

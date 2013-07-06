@@ -62,66 +62,35 @@ var clone = function(fn) {
     return fn.bind({});
 };
 
-var geturl = function(data) {
-    console.log('data:'+data);
-    rest.get(data).on('complete', function(result) {
-	if (result instanceof Error) {
-	    sys.puts('Error: ' + result.message);
-	    this.retry(5000); // try again after 5 sec
-	} else {
-	    // http://stackoverflow.com/questions/2496710/nodejs-write-to-file
-	    sys.puts(result);
-	    TEMPFILE_DEFAULT = "index1.html";
-	    fs.writeFile("index1.html", result, function(err) {
-		if(err) {
-		    console.log(err);
-		} else {
-		    console.log("The file was saved!");
-		}
-	    });
-	}
-    });
-    return "index1.html";
-};
-
 if(require.main == module) {
     program
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
 	.option('-u, --url <url>', 'Resource url')
         .parse(process.argv);
-    console.log(program.url);
     
     if (!program.url) {
-	console.log('case 1');
 	console.log('Taking default fille :'+ program.file);
 	var checkJson = checkHtmlFile(program.file, program.checks);
 	var outJson = JSON.stringify(checkJson, null, 4);
 	console.log(outJson);
     } else {
-	console.log('case 3');
-	console.log('Taking new file');
 	rest.get(''+program.url).on('complete', function(result) {
 	    if (result instanceof Error) {
 		sys.puts('Error: ' + result.message);
 		this.retry(5000); // try again after 5 sec
 	    } else {
 		// http://stackoverflow.com/questions/2496710/nodejs-write-to-file
-		sys.puts(result);
 		TEMPFILE_DEFAULT = "index1.html";
 		fs.writeFile("index1.html", result, function(err) {
 		    if(err) {
 			console.log(err);
 		    } else {
-			console.log("The file was saved!");
-			var checkJson = checkHtmlFile("index1.html", program.checks);
+			var checkJson = checkHtmlFile( TEMPFILE_DEFAULT, program.checks);
 			var outJson = JSON.stringify(checkJson, null, 4);	
 			console.log(outJson);
 		    }
-		    
 		});
-		//		return "index1.html"
-
 	    }
 	});
 	

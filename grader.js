@@ -27,7 +27,7 @@ var program = require('commander');
 var cheerio = require('cheerio');
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
-var TEMPFILE_DEFAULT = "index.html";
+var TEMPFILE_DEFAULT = "";
 var assertFileExists = function(infile) {
     var instr = infile.toString();
     if(!fs.existsSync(instr)) {
@@ -66,29 +66,35 @@ if(require.main == module) {
         program
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
-	.option('-u, --url <url>', 'Url ', function(data) {
-	    rest.get(data).on('complete', function(result) {
+	.option('-u, --url <url>', 'Resource url ', function(data) {
+	    console.log('data:'+data);
+	    return rest.get(data).on('complete', function(result) {
 		if (result instanceof Error) {
 		    sys.puts('Error: ' + result.message);
 		    this.retry(5000); // try again after 5 sec
 		} else {
 		    // http://stackoverflow.com/questions/2496710/nodejs-write-to-file
-		    TEMPFILE_DEFAULT = "index1.html"
-		    fs.writeFile(TEMPFILE_DEFAULT, "Hey there!", function(err) {
+		    sys.puts(result);
+		    TEMPFILE_DEFAULT = "index1.html";
+		    fs.writeFile("index1.html", result, function(err) {
 			if(err) {
 			    console.log(err);
 			} else {
 			    console.log("The file was saved!");
 			}
 		    });
-		    program.file = TEMPFILE_DEFAULT;
 		}
 	    });
-	    console.log(data);
 	}, TEMPFILE_DEFAULT)
         .parse(process.argv);
-    console.log(program.file);
-    var checkJson = checkHtmlFile(program.file, program.checks);
+    console.log(program.url)
+    if (program.url === '') {
+	console.log('Taking default fille :'+ program.file);
+	var checkJson = checkHtmlFile(program.file, program.checks);
+    } else {
+	console.log('Taking new file');
+	var checkJson = checkHtmlFile("index1.html", program.checks);
+    }
     var outJson = JSON.stringify(checkJson, null, 4);
     console.log(outJson);
 } else {

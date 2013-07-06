@@ -70,7 +70,6 @@ if(require.main == module) {
         .parse(process.argv);
     
     if (!program.url) {
-	console.log('Taking default fille :'+ program.file);
 	var checkJson = checkHtmlFile(program.file, program.checks);
 	var outJson = JSON.stringify(checkJson, null, 4);
 	console.log(outJson);

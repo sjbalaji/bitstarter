@@ -114,13 +114,13 @@ if(require.main == module) {
 			console.log(err);
 		    } else {
 			console.log("The file was saved!");
+			var checkJson = checkHtmlFile("index1.html", program.checks);
+			var outJson = JSON.stringify(checkJson, null, 4);	
+			console.log(outJson);
 		    }
 		    
 		});
 		//		return "index1.html"
-	    var checkJson = checkHtmlFile("index.html", program.checks);
-	    var outJson = JSON.stringify(checkJson, null, 4);	
-	    console.log(outJson);
 
 	    }
 	});
